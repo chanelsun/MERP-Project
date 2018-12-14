@@ -1,0 +1,102 @@
+---
+title: "TempDOAnalysisThatis great"
+output: html_document
+---
+
+#import data
+```{r setup}
+library(readr)
+
+setwd("~/Desktop")
+
+natividad_temp_do_2013_2018 <- read_csv("natividad_temp_do_2013_2018.csv") 
+
+attach(natividad_temp_do_2013_2018)
+
+dataraw <- natividad_temp_do_2013_2018
+
+head(dataraw)
+```
+
+##Date Conversion and creating new data table
+```{r}
+ #DateTime <- strptime(dataraw$`Date Time (LST)`,format = "%m/%d/%y %H:%M",tz="us/pacific") didnt't work because it needed to be stored as POSIXct, not POSIXlt
+
+library(lubridate)
+
+DateTime <- mdy_hm(dataraw$`Date Time (LST)`)
+
+head(DateTime)
+
+Year<-year(DateTime)
+
+head(Year)
+
+Month<-month(DateTime)
+
+head(Month)
+
+Seconds <- as.integer(as.POSIXct(DateTime))
+
+head(Seconds)
+
+#creating new data table
+library(tidyverse)
+
+datadate<-add_column(dataraw,DateTime,Year,Month,Seconds)
+
+#remove a column 
+
+datadate$`Date Time (LST)` <- NULL
+
+head(datadate)
+```
+
+##Time Series Plot
+```{r}
+library(ggplot2)
+
+ggplot(data = datadate,aes(DateTime,datadate$`MP Temperature (oC)`)) + geom_line() + geom_smooth()
+
+ggplot(data = datadate,aes(DateTime,datadate$`MP dissolved oxygen (mg/L)`)) + geom_line() + geom_smooth()
+
+ggplot(data = datadate,aes(DateTime,datadate$`PP Temperature (oC)`)) + geom_line() + geom_smooth()
+
+ggplot(data = datadate,aes(DateTime,datadate$`PP dissolved oxygen (mg/L)`)) + geom_line() + geom_smooth()
+```
+
+##TempDO Relationship
+```{r}
+
+ggplot(data = datadate,aes(datadate$`MP Temperature (oC)`,datadate$`MP dissolved oxygen (mg/L)`)) + geom_line() + geom_smooth() + facet_wrap(~Year,nrow = 2)
+
+ggplot(data = datadate,aes(datadate$`PP Temperature (oC)`,datadate$`PP dissolved oxygen (mg/L)`)) + geom_line() + geom_smooth() + facet_wrap(~Year,nrow = 2)
+
+```
+
+##Timelength Above Threshold
+```{r}
+#calculate duration
+
+mpdomax<-filter(datadate,datadate$`MP dissolved oxygen (mg/L)`>8)
+
+
+
+```
+
+
+```{r}
+time <- head(datadate$DateTime, n=10)
+time
+x <- as.integer(as.POSIXct(time))
+x
+y <- c(5,4,9,10,4,6,9,9,10,5)
+y
+xy <- data.frame(x,y)
+xy
+ymax=8
+#Ymax <- rle(xy$y>ymax)
+#Ymax
+#sum(Ymax$lengths[Ymax$values=="TRUE"])
+
+```
